@@ -46,8 +46,8 @@ jobs:
       - name: Сборка и отправка Docker образа
         uses: docker/build-push-action@v4
         with:
-          context: ./contract-container
-          file: ./contract-container/Dockerfile
+          context: ./
+          file: ./Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
