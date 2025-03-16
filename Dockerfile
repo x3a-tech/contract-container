@@ -18,6 +18,7 @@ RUN npm install -g @protobuf-ts/plugin@latest
 WORKDIR /app
 
 COPY entrypoint.sh /entrypoint.sh
+COPY Dockerfile /Dockerfile
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
