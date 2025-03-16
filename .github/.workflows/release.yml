@@ -43,3 +43,46 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+
+      - name: Отправка уведомления в Telegram при успехе
+        if: success()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CICD_BOT_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_CICD_BOT_TOKEN }}
+          format: html
+          disable_web_page_preview: true
+          message: |
+            ✅ <b>Сборка успешно завершена!</b>
+            
+            <b>Репозиторий:</b> <a href="${{ github.server_url }}/${{ github.repository }}">${{ github.repository }}</a>
+            <b>Ветка:</b> ${{ github.ref_name }}
+            <b>Тег:</b> ${{ github.ref_type == 'tag' && github.ref_name || 'Нет' }}
+            <b>Коммит:</b> <a href="${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}">${{ github.sha }}</a>
+            <b>Автор:</b> ${{ github.actor }}
+            <b>Сообщение:</b> ${{ github.event.head_commit.message }}
+            <b>Workflow:</b> <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">Просмотр запуска Workflow</a>
+            
+            <i>Proto файлы успешно скомпилированы и отправлены в репозитории <a href="https://${{ env.GO_REPO }}">Go</a> и <a href="https://${{ env.TS_REPO }}">TypeScript</a>.</i>
+
+      - name: Отправка уведомления в Telegram при ошибке
+        if: failure()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CICD_BOT_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_CICD_BOT_TOKEN }}
+          format: html
+          disable_web_page_preview: true
+          message: |
+            ❌ <b>Ошибка сборки!</b>
+            
+            <b>Репозиторий:</b> <a href="${{ github.server_url }}/${{ github.repository }}">${{ github.repository }}</a>
+            <b>Ветка:</b> ${{ github.ref_name }}
+            <b>Тег:</b> ${{ github.ref_type == 'tag' && github.ref_name || 'Нет' }}
+            <b>Коммит:</b> <a href="${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}">${{ github.sha }}</a>
+            <b>Автор:</b> ${{ github.actor }}
+            <b>Сообщение:</b> ${{ github.event.head_commit.message }}
+            <b>Workflow:</b> <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">Просмотр запуска Workflow</a>
+            
+            <i>Пожалуйста, проверьте логи workflow для получения подробной информации об ошибке.</i>
