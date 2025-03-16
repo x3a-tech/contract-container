@@ -24,8 +24,6 @@ jobs:
         run: |
           echo "Содержимое текущей директории:"
           ls -la
-          echo "Содержимое директории contract-container:"
-          ls -la contract-container
 
       - name: Вход в Container registry
         uses: docker/login-action@v2
