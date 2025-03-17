@@ -97,6 +97,7 @@ execute_with_error_handling protoc -I src --plugin=protoc-gen-ts=/usr/local/bin/
 execute_with_error_handling git clone https://${REPO_PACKAGE_TOKEN}@${GO_REPO} go-repo
 execute_with_error_handling cp -R go_out/* go-repo/
 cd go-repo
+execute_with_error_handling go mod tidy
 execute_with_error_handling git config user.name github-actions
 execute_with_error_handling git config user.email github-actions@github.com
 execute_with_error_handling git add .
