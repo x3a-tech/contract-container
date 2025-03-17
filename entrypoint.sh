@@ -47,6 +47,27 @@ execute_with_error_handling() {
     fi
 }
 
+create_release() {
+    local repo_url=$1
+    local version=$2
+
+    # Извлечение имени владельца и репозитория из URL
+    local repo_owner=$(echo ${repo_url} | cut -d'/' -f4)
+    local repo_name=$(echo ${repo_url} | cut -d'/' -f5 | cut -d'.' -f1)
+
+    execute_with_error_handling curl -X POST \
+      -H "Authorization: token ${REPO_PACKAGE_TOKEN}" \
+      -H "Accept: application/vnd.github.v3+json" \
+      https://api.github.com/repos/${repo_owner}/${repo_name}/releases \
+      -d '{
+        "tag_name": "'"${version}"'",
+        "name": "Release '"${version}"'",
+        "body": "Release '"${version}"' (from proto '"${version}"')",
+        "draft": false,
+        "prerelease": false
+      }'
+}
+
 # Компиляция Proto файлов
 execute_with_error_handling mkdir -p go_out ts_out
 execute_with_error_handling protoc -I src --go_out=go_out --go_opt=paths=source_relative --go-grpc_out=go_out --go-grpc_opt=paths=source_relative src/*/*.proto
@@ -62,6 +83,7 @@ execute_with_error_handling git add .
 execute_with_error_handling git commit -m "Update from proto repo ${PARENT_VERSION}" --allow-empty
 execute_with_error_handling git tag -a ${PARENT_VERSION} -m "Release ${PARENT_VERSION} (from proto ${PARENT_VERSION})"
 execute_with_error_handling git push origin main --tags
+create_release ${GO_REPO} ${PARENT_VERSION}
 cd ..
 
 # Пуш TypeScript файлов
@@ -76,6 +98,8 @@ execute_with_error_handling git add .
 execute_with_error_handling git commit -m "Update from proto repo ${PARENT_VERSION}" --allow-empty
 execute_with_error_handling git tag -a ${PARENT_VERSION} -m "Release ${PARENT_VERSION} (from proto ${PARENT_VERSION})"
 execute_with_error_handling git push origin main --tags
+create_release ${TS_REPO} ${PARENT_VERSION}
+cd ..
 
 # Отправка уведомления об успешном выполнении
 send_telegram_notification "success"
