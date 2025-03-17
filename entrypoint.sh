@@ -66,7 +66,7 @@ cd ..
 
 # Пуш TypeScript файлов
 execute_with_error_handling git clone https://${REPO_PACKAGE_TOKEN}@${TS_REPO} ts-repo
-execute_with_error_handling rm -rf ts-repo/src
+execute_with_error_handling rm -rf ts-repo/src/*
 execute_with_error_handling cp -R ts_out/* ts-repo/src
 cd ts-repo
 execute_with_error_handling git config user.name github-actions
