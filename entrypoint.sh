@@ -51,13 +51,21 @@ create_release() {
     local repo_url=$1
     local version=$2
 
-    # Извлечение имени владельца и репозитория из URL
-    local repo_owner=$(echo ${repo_url} | cut -d'/' -f4)
-    local repo_name=$(echo ${repo_url} | cut -d'/' -f5 | cut -d'.' -f1)
+    # Добавляем протокол https:// если его нет
+    if [[ $repo_url != https://* ]]; then
+        repo_url="https://${repo_url}"
+    fi
 
-    execute_with_error_handling curl -X POST \
+    # Извлечение имени владельца и репозитория из URL
+    local repo_owner=$(echo ${repo_url} | sed -E 's|https://github.com/||' | cut -d'/' -f1)
+    local repo_name=$(echo ${repo_url} | sed -E 's|https://github.com/||' | cut -d'/' -f2 | sed 's/\.git$//')
+
+    echo "Creating release for ${repo_owner}/${repo_name} with version ${version}"
+
+    local response=$(curl -X POST \
       -H "Authorization: token ${REPO_PACKAGE_TOKEN}" \
       -H "Accept: application/vnd.github.v3+json" \
+      -w "\n%{http_code}" \
       https://api.github.com/repos/${repo_owner}/${repo_name}/releases \
       -d '{
         "tag_name": "'"${version}"'",
@@ -65,7 +73,19 @@ create_release() {
         "body": "Release '"${version}"' (from proto '"${version}"')",
         "draft": false,
         "prerelease": false
-      }'
+      }')
+
+    local body=$(echo "$response" | sed '$d')
+    local status=$(echo "$response" | tail -n1)
+
+    echo "Response body: $body"
+    echo "Status code: $status"
+
+    if [ "$status" != "201" ]; then
+        echo "Failed to create release. Status code: $status"
+        send_telegram_notification "failure"
+        exit 1
+    fi
 }
 
 # Компиляция Proto файлов
