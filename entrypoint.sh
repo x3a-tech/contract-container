@@ -70,6 +70,7 @@ execute_with_error_handling cp -R ts_out/* ts-repo/
 cd ts-repo
 execute_with_error_handling git config user.name github-actions
 execute_with_error_handling git config user.email github-actions@github.com
+execute_with_error_handling npm version ${PARENT_VERSION} --no-git-tag-version
 execute_with_error_handling git add .
 execute_with_error_handling git commit -m "Update from proto repo ${PARENT_VERSION}" --allow-empty
 execute_with_error_handling git tag -a ${PARENT_VERSION} -m "Release ${PARENT_VERSION} (from proto ${PARENT_VERSION})"
