@@ -11,7 +11,7 @@ send_telegram_notification() {
 
 <b>Репозиторий:</b> <a href=\"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}\">${GITHUB_REPOSITORY}</a>
 <b>Ветка:</b> ${GITHUB_REF_NAME}
-<b>Тег:</b> ${GITHUB_REF_TYPE == 'tag' && GITHUB_REF_NAME || 'Нет'}
+<b>Тег:</b> ${GITHUB_REF_NAME}
 <b>Коммит:</b> <a href=\"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}\">${GITHUB_SHA}</a>
 <b>Автор:</b> ${GITHUB_ACTOR}
 <b>Сообщение:</b> ${COMMIT_MESSAGE}
@@ -23,7 +23,7 @@ send_telegram_notification() {
 
 <b>Репозиторий:</b> <a href=\"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}\">${GITHUB_REPOSITORY}</a>
 <b>Ветка:</b> ${GITHUB_REF_NAME}
-<b>Тег:</b> ${GITHUB_REF_TYPE == 'tag' && GITHUB_REF_NAME || 'Нет'}
+<b>Тег:</b> ${GITHUB_REF_NAME}
 <b>Коммит:</b> <a href=\"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}\">${GITHUB_SHA}</a>
 <b>Автор:</b> ${GITHUB_ACTOR}
 <b>Сообщение:</b> ${COMMIT_MESSAGE}
