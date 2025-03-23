@@ -24,8 +24,6 @@ send_telegram_notification() {
         fi
 
         message="${message}.</i>"
-    else
-        # ... (код для сообщения об ошибке остается без изменений)
     fi
     curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
         -d "chat_id=${TELEGRAM_CHAT_ID}" \
