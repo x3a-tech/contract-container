@@ -6,18 +6,18 @@ send_telegram_notification() {
     local status=$1
     local message
 
-    if [ "$status" = "success" ]; then
-        message="✅ <b>Сборка успешно завершена!</b>
+     if [ "$status" = "success" ]; then
+            message="✅ <b>Сборка успешно завершена!</b>
 
-<b>Репозиторий:</b> <a href=\"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}\">${GITHUB_REPOSITORY}</a>
-<b>Ветка:</b> ${GITHUB_REF_NAME}
-<b>Тег:</b> ${GITHUB_REF_NAME}
-<b>Коммит:</b> <a href=\"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}\">${GITHUB_SHA}</a>
-<b>Автор:</b> ${GITHUB_ACTOR}
-<b>Сообщение:</b> ${COMMIT_MESSAGE}
-<b>Workflow:</b> <a href=\"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}\">Просмотр запуска Workflow</a>
+    <b>Репозиторий:</b> <a href=\"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}\">${GITHUB_REPOSITORY}</a>
+    <b>Ветка:</b> ${GITHUB_REF_NAME}
+    <b>Тег:</b> ${GITHUB_REF_NAME}
+    <b>Коммит:</b> <a href=\"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}\">${GITHUB_SHA}</a>
+    <b>Автор:</b> ${GITHUB_ACTOR}
+    <b>Сообщение:</b> ${COMMIT_MESSAGE}
+    <b>Workflow:</b> <a href=\"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}\">Просмотр запуска Workflow</a>
 
-<i>Proto файлы успешно скомпилированы и отправлены в репозиторий <a href=\"https://${GO_REPO}\">Go</a>"
+    <i>Proto файлы успешно скомпилированы и отправлены в репозиторий <a href=\"https://${GO_REPO}\">Go</a>"
 
         if [ -z "$EXCLUDE_TS" ]; then
             message="${message} и <a href=\"https://${TS_REPO}\">TypeScript</a>"
@@ -27,7 +27,6 @@ send_telegram_notification() {
     else
         # ... (код для сообщения об ошибке остается без изменений)
     fi
-
     curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
         -d "chat_id=${TELEGRAM_CHAT_ID}" \
         -d "text=${message}" \
