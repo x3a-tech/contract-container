@@ -43,6 +43,7 @@ Docker-образ автоматически собирается и публи�
      GITHUB_ACTOR: ${{ github.actor }}
      GITHUB_RUN_ID: ${{ github.run_id }}
      COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+     EXCLUDE_TS: true
    run: |
      docker run --rm \
        -e GO_REPO=${{ env.GO_REPO }} \
@@ -59,6 +60,7 @@ Docker-образ автоматически собирается и публи�
        -e GITHUB_ACTOR \
        -e GITHUB_RUN_ID \
        -e COMMIT_MESSAGE \
+       -e EXCLUDE_TS \
        -v ${{ github.workspace }}:/app \
        ${{ env.DOCKER_IMAGE }}
 ```
