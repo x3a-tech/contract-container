@@ -55,6 +55,8 @@ jobs:
 
       - name: Отправка уведомления в Discord при успехе (через curl)
         if: success()
+        env:
+          DISCORD_CICD_STATUS_WEBHOOK: ${{ secrets.DISCORD_CICD_STATUS_WEBHOOK }}
         run: |
           curl -H "Content-Type: application/json" -X POST -d '{
             "embeds": [
@@ -93,10 +95,12 @@ jobs:
                 ]
               }
             ]
-          }' ${{ secrets.DISCORD_CICD_STATUS_WEBHOOK }}
+          }' "$DISCORD_CICD_STATUS_WEBHOOK"
 
       - name: Отправка уведомления в Discord при ошибке (через curl)
         if: failure()
+        env:
+          DISCORD_CICD_STATUS_WEBHOOK: ${{ secrets.DISCORD_CICD_STATUS_WEBHOOK }}
         run: |
           curl -H "Content-Type: application/json" -X POST -d '{
             "embeds": [
@@ -131,4 +135,4 @@ jobs:
                 ]
               }
             ]
-          }' ${{ secrets.DISCORD_CICD_STATUS_WEBHOOK }}
+          }' "$DISCORD_CICD_STATUS_WEBHOOK"
