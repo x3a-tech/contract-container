@@ -100,7 +100,7 @@ send_discord_notification() {
         }'
     fi
     
-    curl -s -H "Content-Type: application/json" -X POST -d "$message" "${DISCORD_WEBHOOK}"
+    curl -s -H "Content-Type: application/json" -X POST -d "$message" "${DISCORD_CICD_STATUS_WEBHOOK}"
 }
 
 # Функция для выполнения команд с обработкой ошибок
