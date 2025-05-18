@@ -2,50 +2,111 @@
 
 set -e
 
-send_telegram_notification() {
+send_discord_notification() {
     local status=$1
     local message
 
-     if [ "$status" = "success" ]; then
-      message="✅ <b>Сборка успешно завершена!</b>
-<b>Репозиторий:</b> <a href=\"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}\">${GITHUB_REPOSITORY}</a>
-<b>Ветка:</b> ${GITHUB_REF_NAME}
-<b>Тег:</b> ${GITHUB_REF_NAME}
-<b>Коммит:</b> <a href=\"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}\">${GITHUB_SHA}</a>
-<b>Автор:</b> ${GITHUB_ACTOR}
-<b>Сообщение:</b> ${COMMIT_MESSAGE}
-<b>Workflow:</b> <a href=\"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}\">Просмотр запуска Workflow</a>
-
-<i>Proto файлы успешно скомпилированы и отправлены в репозиторий <a href=\"https://${GO_REPO}\">Go</a>"
-
+    if [ "$status" = "success" ]; then
+        message='{
+            "embeds": [
+                {
+                    "title": "✅ Сборка успешно завершена!",
+                    "color": 3066993,
+                    "fields": [
+                        {
+                            "name": "Репозиторий",
+                            "value": "['${GITHUB_REPOSITORY}']('${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}')"
+                        },
+                        {
+                            "name": "Ветка",
+                            "value": "'${GITHUB_REF_NAME}'"
+                        },
+                        {
+                            "name": "Тег",
+                            "value": "'${GITHUB_REF_NAME}'"
+                        },
+                        {
+                            "name": "Коммит",
+                            "value": "['${GITHUB_SHA}']('${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}')"
+                        },
+                        {
+                            "name": "Автор",
+                            "value": "'${GITHUB_ACTOR}'"
+                        },
+                        {
+                            "name": "Сообщение",
+                            "value": "'${COMMIT_MESSAGE}'"
+                        },
+                        {
+                            "name": "Workflow",
+                            "value": "[Просмотр запуска Workflow]('${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}')"
+                        },
+                        {
+                            "name": "Статус",
+                            "value": "Proto файлы успешно скомпилированы и отправлены в репозиторий [Go](https://'${GO_REPO}')"
+                        }
+                    ]
+                }
+            ]
+        }'
+        
         if [ -z "$EXCLUDE_TS" ]; then
-            message="${message} и <a href=\"https://${TS_REPO}\">TypeScript</a>"
+            message=$(echo "$message" | sed 's/репозиторий \[Go\]"/репозиторий [Go](https:\/\/'${GO_REPO}') и [TypeScript](https:\/\/'${TS_REPO}')"/')
         fi
-
-        message="${message}.</i>"
+        
+        message=$(echo "$message" | sed 's/"Статус"/"Статус",\n"inline": false/')
     else
-        message="❌ <b>Ошибка сборки!</b>
-<b>Репозиторий:</b> <a href=\"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}\">${GITHUB_REPOSITORY}</a>
-<b>Ветка:</b> ${GITHUB_REF_NAME}
-<b>Тег:</b> ${GITHUB_REF_NAME}
-<b>Коммит:</b> <a href=\"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}\">${GITHUB_SHA}</a>
-<b>Автор:</b> ${GITHUB_ACTOR}
-<b>Сообщение:</b> ${COMMIT_MESSAGE}
-<b>Workflow:</b> <a href=\"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}\">Просмотр запуска Workflow</a>
-
-<i>Пожалуйста, проверьте логи workflow для получения подробной информации об ошибке.</i>"
+        message='{
+            "embeds": [
+                {
+                    "title": "❌ Ошибка сборки!",
+                    "color": 15158332,
+                    "fields": [
+                        {
+                            "name": "Репозиторий",
+                            "value": "['${GITHUB_REPOSITORY}']('${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}')"
+                        },
+                        {
+                            "name": "Ветка",
+                            "value": "'${GITHUB_REF_NAME}'"
+                        },
+                        {
+                            "name": "Тег",
+                            "value": "'${GITHUB_REF_NAME}'"
+                        },
+                        {
+                            "name": "Коммит",
+                            "value": "['${GITHUB_SHA}']('${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}')"
+                        },
+                        {
+                            "name": "Автор",
+                            "value": "'${GITHUB_ACTOR}'"
+                        },
+                        {
+                            "name": "Сообщение",
+                            "value": "'${COMMIT_MESSAGE}'"
+                        },
+                        {
+                            "name": "Workflow",
+                            "value": "[Просмотр запуска Workflow]('${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}')"
+                        },
+                        {
+                            "name": "Подробности",
+                            "value": "Пожалуйста, проверьте логи workflow для получения подробной информации об ошибке."
+                        }
+                    ]
+                }
+            ]
+        }'
     fi
-    curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-        -d "chat_id=${TELEGRAM_CHAT_ID}" \
-        -d "text=${message}" \
-        -d "parse_mode=HTML" \
-        -d "disable_web_page_preview=true"
+    
+    curl -s -H "Content-Type: application/json" -X POST -d "$message" "${DISCORD_CICD_STATUS_WEBHOOK}"
 }
 
 # Функция для выполнения команд с обработкой ошибок
 execute_with_error_handling() {
     if ! "$@"; then
-        send_telegram_notification "failure"
+        send_discord_notification "failure"
         exit 1
     fi
 }
@@ -86,7 +147,7 @@ create_release() {
 
     if [ "$status" != "201" ]; then
         echo "Failed to create release. Status code: $status"
-        send_telegram_notification "failure"
+        send_discord_notification "failure"
         exit 1
     fi
 }
@@ -132,4 +193,4 @@ if [ -z "$EXCLUDE_TS" ]; then
 fi
 
 # Отправка уведомления об успешном выполнении
-send_telegram_notification "success"
+send_discord_notification "success"
